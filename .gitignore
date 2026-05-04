@@ -87,3 +87,10 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Go
+bin/
+*.exe
+*.test
+*.out
+tmp/

@@ -89,12 +89,14 @@ sudo make install       # 安装到 /usr/local/bin
     --c6-enable     Enable C-State C6
     --c6-disable    Disable C-State C6
     --no-color      Disable colored output
+    --governor <g>  Set CPU frequency governor (performance/powersave/...)
 
   Examples:
     zenstates -l                                # List all P-States
     zenstates -p 0 --freq 3800 --voltage 1.35   # P0: 3800MHz, 1.3500V
     zenstates -p 1 --disable                   # Disable P1
     zenstates -p 0 -f 152 -d 8 -v 32           # Legacy: FID/DID/VID
+    zenstates --governor performance            # Set CPU governor
 ```
 
 ### 示例
@@ -114,6 +116,9 @@ sudo ./bin/zenstates --c6-enable
 
 # 传统方式 - 直接设 FID/DID/VID
 sudo ./bin/zenstates -p 0 -f 152 -d 8 -v 32
+
+# 设置 CPU 频率调度器为 performance
+sudo ./bin/zenstates --governor performance
 ```
 
 ## togglecode — ASUS Q-Code 显示开关
@@ -145,6 +150,7 @@ sudo ./bin/zenstates -p 0 -f 152 -d 8 -v 32
 | **表格边框** | 使用 ┌─┐│└┘ 等 Unicode 画线字符 |
 | **Diff 对比** | 修改 P-State 时显示 before/after 对比 |
 | **直接设频率/电压** | `--freq 3800 --voltage 1.35` 自动计算 FID/DID/VID |
+| **CPU 调度器** | `--governor performance` — 设置频率调度策略 |
 | **禁用颜色** | `--no-color` 参数/重定向时自动降级 |
 | **自动降级** | 输出到文件/管道时自动移除颜色代码 |
 
@@ -178,4 +184,5 @@ sudo ./bin/zenstates -p 0 -f 152 -d 8 -v 32
 | **MSR 读写** | `os.lseek/read/write` | `os.File.ReadAt/WriteAt` + binary |
 | **位操作** | 全局 `setbits()` | `pstate.PState` 方法链 |
 | **端口 I/O** | `portio` + `iopl(3)` | `/dev/port` 文件操作 |
+| **CPU 调度器** | ✘ 无此功能 | **`--governor` 一键设置频率策略** |
 | **部署** | 需 Python + 依赖 | **静态编译单二进制**，零依赖 |

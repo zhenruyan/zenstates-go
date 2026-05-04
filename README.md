@@ -89,12 +89,14 @@ Diff display when modifying a P-State:
     --c6-enable     Enable C-State C6
     --c6-disable    Disable C-State C6
     --no-color      Disable colored output
+    --governor <g>  Set CPU frequency governor (performance/powersave/...)
 
   Examples:
     zenstates -l                                # List all P-States
     zenstates -p 0 --freq 3800 --voltage 1.35   # P0: 3800MHz, 1.3500V
     zenstates -p 1 --disable                   # Disable P1
     zenstates -p 0 -f 152 -d 8 -v 32           # Legacy: FID/DID/VID
+    zenstates --governor performance            # Set CPU governor
 ```
 
 ### Examples
@@ -112,8 +114,14 @@ sudo ./bin/zenstates -p 1 --disable
 # Enable C6
 sudo ./bin/zenstates --c6-enable
 
+# Set CPU governor
+sudo ./bin/zenstates --governor performance
+
 # Legacy: set FID/DID/VID directly
 sudo ./bin/zenstates -p 0 -f 152 -d 8 -v 32
+
+# Set CPU governor to performance
+sudo ./bin/zenstates --governor performance
 ```
 
 ## togglecode — ASUS Q-Code Display Toggle
@@ -145,6 +153,7 @@ Toggle the Q-Code display on ASUS Crosshair VI Hero and other boards with a comp
 | **Box-drawing tables** | ┌─┐│└┘ Unicode table borders |
 | **Diff view** | Before/after comparison when modifying P-States |
 | **Direct freq/voltage** | `--freq 3800 --voltage 1.35` auto-calculates FID/DID/VID |
+| **CPU governor** | `--governor performance` — set frequency scaling governor |
 | **No-color mode** | `--no-color` flag, auto-disable on pipe/redirect |
 | **Auto fallback** | Removes ANSI codes when output is piped to a file |
 
@@ -179,6 +188,7 @@ Toggle the Q-Code display on ASUS Crosshair VI Hero and other boards with a comp
 | **MSR I/O** | `os.lseek/read/write` | `os.File.ReadAt/WriteAt` + binary |
 | **Bit ops** | Global `setbits()` | `pstate.PState` method chain |
 | **Port I/O** | `portio` + `iopl(3)` | `/dev/port` file operations |
+| **CPU governor** | ✘ Not available | **`--governor` — set frequency scaling policy** |
 | **Deployment** | Python + dependencies | **Static single binary**, zero dependencies |
 
 ## Credits

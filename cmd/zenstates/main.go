@@ -11,12 +11,14 @@
 //	zenstates --c6-enable                                 # Enable C6 state
 //	zenstates --c6-disable                                # Disable C6 state
 //	zenstates -p 0 -f 152 -d 8 -v 32                      # Legacy: set FID/DID/VID directly
+//	zenstates --governor performance                    # Set CPU governor to performance
 package main
 
 import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/amdcpu-overclocking/internal/display"
 	"github.com/amdcpu-overclocking/internal/msr"
@@ -37,6 +39,7 @@ func main() {
 	c6Enable := flag.Bool("c6-enable", false, "Enable C-State C6")
 	c6Disable := flag.Bool("c6-disable", false, "Disable C-State C6")
 	noColor := flag.Bool("no-color", false, "Disable colored output")
+	governor := flag.String("governor", "", "Set CPU frequency governor (e.g. performance)")
 
 	flag.Parse()
 
@@ -75,8 +78,13 @@ func main() {
 		modifyC6(false)
 	}
 
+	// ── --governor ───────────────────────────────────────────
+	if *governor != "" {
+		setGovernor(*governor)
+	}
+
 	// ── No action shown? Show help ──────────────────────────────
-	if !*list && *pstateIdx == -1 && !*c6Enable && !*c6Disable {
+	if !*list && *pstateIdx == -1 && !*c6Enable && !*c6Disable && *governor == "" {
 		flag.Usage()
 	}
 }
@@ -447,6 +455,54 @@ func modifyC6(enable bool) {
 	fmt.Println()
 }
 
+// ── CPU Governor ────────────────────────────────────────────────
+
+// setGovernor sets the CPU frequency scaling governor for all CPUs.
+func setGovernor(governor string) {
+	data, err := os.ReadFile("/sys/devices/system/cpu/present")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "  %s reading CPU present: %v\n",
+			display.RedText("Error:"), err)
+		os.Exit(1)
+	}
+
+	s := strings.TrimSpace(string(data))
+	var maxID int
+	if idx := strings.IndexByte(s, '-'); idx >= 0 {
+		_, err = fmt.Sscanf(s[idx+1:], "%d", &maxID)
+	} else {
+		_, err = fmt.Sscanf(s, "%d", &maxID)
+	}
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "  %s parsing CPU present %q: %v\n",
+			display.RedText("Error:"), s, err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("  %s Setting CPU frequency governor to \"%s\" for %d CPUs\n",
+		display.Bullet(), governor, maxID+1)
+
+	errors := 0
+	for i := 0; i <= maxID; i++ {
+		path := fmt.Sprintf("/sys/devices/system/cpu/cpu%d/cpufreq/scaling_governor", i)
+		if err := os.WriteFile(path, []byte(governor+"\n"), 0); err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			fmt.Fprintf(os.Stderr, "  %s CPU %d: %v\n",
+				display.RedText("Error:"), i, err)
+			errors++
+		}
+	}
+
+	if errors > 0 {
+		fmt.Printf("  %s %d error(s) occurred\n", display.RedText(display.IconCross), errors)
+		os.Exit(1)
+	}
+
+	fmt.Printf("  %s\n", display.GreenText(
+		fmt.Sprintf("CPU governor set to \"%s\"", governor)))
+}
 func init() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "\n")
@@ -468,6 +524,7 @@ func init() {
 		fmt.Fprintf(os.Stderr, "    --c6-enable   Enable C-State C6\n")
 		fmt.Fprintf(os.Stderr, "    --c6-disable  Disable C-State C6\n")
 		fmt.Fprintf(os.Stderr, "    --no-color    Disable colored output\n")
+		fmt.Fprintf(os.Stderr, "    --governor <g>  Set CPU frequency governor (performance/powersave/...)\n")
 		fmt.Fprintf(os.Stderr, "\n")
 		fmt.Fprintf(os.Stderr, "  %s\n", display.BoldText("Examples:"))
 		fmt.Fprintf(os.Stderr, "    zenstates -l                          %s\n",
@@ -478,6 +535,8 @@ func init() {
 			display.DimText("# Legacy: FID=152 DID=8 VID=32"))
 		fmt.Fprintf(os.Stderr, "    zenstates -p 1 --disable             %s\n",
 			display.DimText("# Disable P1"))
+		fmt.Fprintf(os.Stderr, "    zenstates --governor performance     %s\n",
+			display.DimText("# Set CPU governor"))
 		fmt.Fprintf(os.Stderr, "\n")
 		fmt.Fprintf(os.Stderr, "  %s\n", display.DimText("Requires root and the msr kernel module (modprobe msr)."))
 		fmt.Fprintf(os.Stderr, "\n")
