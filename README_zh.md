@@ -1,35 +1,35 @@
-# ZenStates-Linux (Go Edition)
+# ZenStates-Linux (Go 版)
 
-AMD Ryzen processor overclocking toolkit — rewritten in Go with beautiful terminal display.
+AMD Ryzen 处理器超频工具集——Go 语言改写版，带精美的终端展示效果。
+
+## 项目结构
 
 ```
 .
 ├── go.mod
 ├── Makefile
 ├── cmd/
-│   ├── zenstates/              # P-State management tool
-│   └── togglecode/             # ASUS Q-Code display toggle
+│   ├── zenstates/              # P-State 管理工具 (主入口)
+│   └── togglecode/             # ASUS 主板 Q-Code 切换
 ├── internal/
-│   ├── display/                # 🎨 Terminal display (tables/colors/icons)
-│   ├── msr/                    # MSR register read/write
-│   └── pstate/                 # P-State parsing & bit manipulation
-├── README.md                   # English documentation
-├── README_zh.md                # 中文文档
-└── ...
+│   ├── display/                # 🎨 终端展示库 (表格/颜色/图标)
+│   ├── msr/                    # MSR 寄存器读写
+│   └── pstate/                 # P-State 解析与位操作
+└── README.md
 ```
 
-## Build
+## 构建
 
 ```bash
-make                    # Build all tools
-sudo make install       # Install to /usr/local/bin
+make                    # 编译所有工具
+sudo make install       # 安装到 /usr/local/bin
 ```
 
-## zenstates — AMD Ryzen P-State Editor
+## zenstates — 动态编辑 AMD Ryzen P-State
 
-Requires root and the `msr` kernel module: `sudo modprobe msr`
+需要 root 权限和 `msr` 内核模块：`sudo modprobe msr`
 
-### Output Preview
+### 展示效果（十进制）
 
 ```
   AMD Ryzen P-States
@@ -52,7 +52,7 @@ Requires root and the `msr` kernel module: `sudo modprobe msr`
     Core     ●  Enabled
 ```
 
-Diff display when modifying a P-State:
+修改 P-State 时显示 diff 对比（十进制）：
 
 ```
   P0 Changes
@@ -65,7 +65,7 @@ Diff display when modifying a P-State:
 └───────────┴────────────────────┴────────────────────┘
 ```
 
-### Usage
+### 完整命令行
 
 ```
   ZenStates-Linux — AMD Ryzen P-State Editor
@@ -79,8 +79,8 @@ Diff display when modifying a P-State:
     --enable        Enable P-State
     --disable       Disable P-State
 
-    --freq <MHz>    Target frequency (e.g. 3800)         ← NEW! direct freq setting
-    --voltage <V>   Target core voltage (e.g. 1.35)      ← NEW! direct voltage setting
+    --freq <MHz>    Target frequency (e.g. 3800)         ← 新! 直接设频率
+    --voltage <V>   Target core voltage (e.g. 1.35)      ← 新! 直接设电压
 
     -f <val>        FID to set (legacy, decimal)
     -d <val>        DID to set (legacy, decimal)
@@ -97,28 +97,28 @@ Diff display when modifying a P-State:
     zenstates -p 0 -f 152 -d 8 -v 32           # Legacy: FID/DID/VID
 ```
 
-### Examples
+### 示例
 
 ```bash
-# List all P-States
+# 列出当前所有 P-State
 sudo ./bin/zenstates -l
 
-# Set P0 to 3800MHz @ 1.3500V (recommended)
+# 设置 P0: 3800MHz @ 1.3500V (推荐方式)
 sudo ./bin/zenstates -p 0 --freq 3800 --voltage 1.35
 
-# Disable P1
+# 禁用 P1
 sudo ./bin/zenstates -p 1 --disable
 
-# Enable C6
+# 启用 C6
 sudo ./bin/zenstates --c6-enable
 
-# Legacy: set FID/DID/VID directly
+# 传统方式 - 直接设 FID/DID/VID
 sudo ./bin/zenstates -p 0 -f 152 -d 8 -v 32
 ```
 
-## togglecode — ASUS Q-Code Display Toggle
+## togglecode — ASUS Q-Code 显示开关
 
-Toggle the Q-Code display on ASUS Crosshair VI Hero and other boards with a compatible Super I/O chip.
+切换 ASUS Crosshair VI Hero 等主板的 Q-Code 显示的开启/关闭。
 
 ```
   ASUS Q-Code Display Toggle
@@ -136,47 +136,46 @@ Toggle the Q-Code display on ASUS Crosshair VI Hero and other boards with a comp
   • Reg 0xF0: 0x48 → 0x40  (bit3: 1→0)
 ```
 
-## Display Features
+## 展示特性
 
-| Feature | Description |
-|---------|------------|
-| **Color output** | Auto-detects terminal, ANSI colors |
-| **Unicode icons** | ✔ ✘ ● ○ ▶ • status indicators |
-| **Box-drawing tables** | ┌─┐│└┘ Unicode table borders |
-| **Diff view** | Before/after comparison when modifying P-States |
-| **Direct freq/voltage** | `--freq 3800 --voltage 1.35` auto-calculates FID/DID/VID |
-| **No-color mode** | `--no-color` flag, auto-disable on pipe/redirect |
-| **Auto fallback** | Removes ANSI codes when output is piped to a file |
+| 特性 | 说明 |
+|------|------|
+| **彩色输出** | 终端自动检测，支持 ANSI 彩色 |
+| **Unicode 图标** | ✔ ✘ ● ○ ▶ • 等状态图标 |
+| **表格边框** | 使用 ┌─┐│└┘ 等 Unicode 画线字符 |
+| **Diff 对比** | 修改 P-State 时显示 before/after 对比 |
+| **直接设频率/电压** | `--freq 3800 --voltage 1.35` 自动计算 FID/DID/VID |
+| **禁用颜色** | `--no-color` 参数/重定向时自动降级 |
+| **自动降级** | 输出到文件/管道时自动移除颜色代码 |
 
-## Frequency Table (DID=8)
+## 频率对照表 (DID=8)
 
-| FID | Frequency (MHz) |
-|-----|----------------|
-| 144 | 3600           |
-| 148 | 3700           |
-| 152 | 3800           |
-| 156 | 3900           |
-| 160 | 4000           |
-| 164 | 4100           |
+| FID | 频率 (MHz) |
+|-----|-----------|
+| 144 | 3600      |
+| 148 | 3700      |
+| 152 | 3800      |
+| 156 | 3900      |
+| 160 | 4000      |
+| 164 | 4100      |
 
-## Voltage Table
+## 电压对照表
 
-| VID | Voltage (V) |
-|-----|------------|
-| 48  | 1.2500     |
-| 40  | 1.3000     |
-| 32  | 1.3500     |
-| 24  | 1.4000     |
-| 16  | 1.4500     |
+| VID | 电压 (V) |
+|-----|---------|
+| 48  | 1.2500  |
+| 40  | 1.3000  |
+| 32  | 1.3500  |
+| 24  | 1.4000  |
+| 16  | 1.4500  |
 
-## Differences from Python Original
+## 与 Python 原版的区别
 
-| Aspect | Python Version | Go Version |
-|--------|---------------|------------|
-| **Number format** | Hexadecimal I/O | **Decimal I/O** |
-| **Display** | Plain text | **Color table + Unicode icons + Diff view** |
-| **High-level API** | — | **`--freq` / `--voltage`** auto calculation |
-| **MSR I/O** | `os.lseek/read/write` | `os.File.ReadAt/WriteAt` + binary |
-| **Bit ops** | Global `setbits()` | `pstate.PState` method chain |
-| **Port I/O** | `portio` + `iopl(3)` | `/dev/port` file operations |
-| **Deployment** | Python + dependencies | **Static single binary**, zero dependencies |
+| 方面 | Python 版 | Go 版 |
+|------|-----------|-------|
+| **数值格式** | 十六进制输入/输出 | **十进制输入/输出** |
+| **展示效果** | 纯文本 | **彩色表格 + Unicode 图标 + Diff 对比** |
+| **MSR 读写** | `os.lseek/read/write` | `os.File.ReadAt/WriteAt` + binary |
+| **位操作** | 全局 `setbits()` | `pstate.PState` 方法链 |
+| **端口 I/O** | `portio` + `iopl(3)` | `/dev/port` 文件操作 |
+| **部署** | 需 Python + 依赖 | **静态编译单二进制**，零依赖 |
