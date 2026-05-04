@@ -180,3 +180,12 @@ Toggle the Q-Code display on ASUS Crosshair VI Hero and other boards with a comp
 | **Bit ops** | Global `setbits()` | `pstate.PState` method chain |
 | **Port I/O** | `portio` + `iopl(3)` | `/dev/port` file operations |
 | **Deployment** | Python + dependencies | **Static single binary**, zero dependencies |
+
+## Credits
+
+This Go port is based on the original **[ZenStates-Linux](https://github.com/r4m0n/ZenStates-Linux)** Python project by [r4m0n](https://github.com/r4m0n).
+
+- `zenstates.py` — Original P-State editing tool
+- `togglecode.py` — Original ASUS Q-Code toggle script
+
+Thank you for the foundational work on AMD Ryzen overclocking utilities!
